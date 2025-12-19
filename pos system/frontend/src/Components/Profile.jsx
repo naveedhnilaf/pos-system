@@ -35,7 +35,7 @@ function Profile() {
             }
 
             const response = await axios.get(
-                `http://localhost:5000/api/users/${user._id}`,
+                `http://localhost:5002/api/users/${user._id}`,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`
@@ -76,7 +76,7 @@ function Profile() {
         try {
             const token = localStorage.getItem('pos-token');
             const response = await axios.put(
-                `http://localhost:5000/api/users/${user._id}`,
+                `http://localhost:5002/api/users/${user._id}`,
                 {
                     name: profileData.name,
                     email: profileData.email,
@@ -122,7 +122,7 @@ function Profile() {
         try {
             const token = localStorage.getItem('pos-token');
             const response = await axios.post(
-                `http://localhost:5000/api/users/${user._id}/change-password`,
+                `http://localhost:5002/api/users/${user._id}/change-password`,
                 {
                     currentPassword: passwordData.currentPassword,
                     newPassword: passwordData.newPassword,

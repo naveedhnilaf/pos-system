@@ -32,7 +32,7 @@ function Order() {
             }
 
             const response = await axios.get(
-                "http://localhost:5000/api/orders/all",
+                "http://localhost:5002/api/orders/all",
                 {
                     headers: {
                         Authorization: `Bearer ${token}`
@@ -71,7 +71,7 @@ function Order() {
         try {
             if (isEditMode) {
                 const response = await axios.put(
-                    `http://localhost:5000/api/orders/${editingId}`,
+                    `http://localhost:5002/api/orders/${editingId}`,
                     { status, notes },
                     {
                         headers: {
@@ -87,7 +87,7 @@ function Order() {
                 }
             } else {
                 const response = await axios.post(
-                    "http://localhost:5000/api/orders/add",
+                    "http://localhost:5002/api/orders/add",
                     { 
                         orderNumber, 
                         customerName, 
@@ -152,7 +152,7 @@ function Order() {
         try {
             setError("");
             const response = await axios.delete(
-                `http://localhost:5000/api/orders/${id}`,
+                `http://localhost:5002/api/orders/${id}`,
                 {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem('pos-token')}`

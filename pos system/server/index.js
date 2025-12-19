@@ -8,6 +8,7 @@ import supplierRoutes from './Routes/Supplier.js';
 import productRoutes from './Routes/Product.js';
 import userRoutes from './Routes/User.js';
 import orderRoutes from './Routes/Order.js';
+import { connectOracle } from './db/oracle.js';
 
 dotenv.config();
 
@@ -19,6 +20,10 @@ app.use(express.json());
 
 // Connect to MongoDB
 connectDB();
+
+//connect to oracle
+await connectOracle();
+
 
 // Test route
 app.get('/', (req, res) => {

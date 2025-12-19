@@ -18,7 +18,7 @@ function Categories() {
     const fetchCategories = async () => {
         try {
             const response = await axios.get(
-                "http://localhost:5000/api/categories/all",
+                "http://localhost:5002/api/categories/all",
                 {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem('pos-token')}`
@@ -42,7 +42,7 @@ function Categories() {
             if (isEditMode) {
                 // Update existing category
                 const response = await axios.put(
-                    `http://localhost:5000/api/categories/${editingId}`,
+                    `http://localhost:5002/api/categories/${editingId}`,
                     { categoryName, categoryDescription },
                     {
                         headers: {
@@ -62,7 +62,7 @@ function Categories() {
             } else {
                 // Add new category
                 const response = await axios.post(
-                    "http://localhost:5000/api/categories/add",
+                    "http://localhost:5002/api/categories/add",
                     { categoryName, categoryDescription },
                     {
                         headers: {
@@ -109,7 +109,7 @@ function Categories() {
 
         try {
             const response = await axios.delete(
-                `http://localhost:5000/api/categories/${id}`,
+                `http://localhost:5002/api/categories/${id}`,
                 {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem('pos-token')}`

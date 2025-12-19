@@ -22,7 +22,7 @@ function Summary() {
         try {
             const token = localStorage.getItem('pos-token');
             const response = await axios.get(
-                "http://localhost:5000/api/products/all",
+                "http://localhost:5002/api/products/all",
                 {
                     headers: {
                         Authorization: `Bearer ${token}`

@@ -21,7 +21,7 @@ function Product() {
     const fetchProducts = async () => {
         try {
             const response = await axios.get(
-                "http://localhost:5000/api/products/all",
+                "http://localhost:5002/api/products/all",
                 {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem('pos-token')}`
@@ -45,7 +45,7 @@ function Product() {
             if (isEditMode) {
                 // Update existing product
                 const response = await axios.put(
-                    `http://localhost:5000/api/products/${editingId}`,
+                    `http://localhost:5002/api/products/${editingId}`,
                     { productName, productDescription, productPrice, productQuantity, productCategory },
                     {
                         headers: {
@@ -68,7 +68,7 @@ function Product() {
             } else {
                 // Add new product
                 const response = await axios.post(
-                    "http://localhost:5000/api/products/add",
+                    "http://localhost:5002/api/products/add",
                     { productName, productDescription, productPrice, productQuantity, productCategory },
                     {
                         headers: {
@@ -123,7 +123,7 @@ function Product() {
 
         try {
             const response = await axios.delete(
-                `http://localhost:5000/api/products/${id}`,
+                `http://localhost:5002/api/products/${id}`,
                 {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem('pos-token')}`

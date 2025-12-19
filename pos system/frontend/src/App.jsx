@@ -1,6 +1,6 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Root from "./pages/Root";
-import Login from "./pages/Login";
+import Login from "./Pages/Login";
 import ProtectedRoutes from "./utils/ProtectedRoutes";
 import Dashboard from "./Pages/Dashboard";
 import CustomerDashboard from "./Pages/CustomerDashboard";
@@ -19,93 +19,50 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* ROOT ROUTE */}
-        <Route path="/" element={<Root />} />
+        {/* Default route redirects to login */}
+        <Route path="/" element={<Navigate to="/login" replace />} />
 
-        {/* AUTH */}
+        {/* Login page */}
         <Route path="/login" element={<Login />} />
 
-        {/* ADMIN DASHBOARD - PROTECTED */}
+        {/* Admin dashboard - Protected */}
         <Route 
-          path="/admin-dashboard" 
+          path="/admin-dashboard/*" 
           element={
             <ProtectedRoutes requireRole={['admin']}>
               <Dashboard />
             </ProtectedRoutes>
           }
         >
-          <Route
-            index
-            element={<Summary />}
-          />
-         <Route
-            path="categories"
-            element={<Categories />}
-          />
-          <Route
-            path="products"
-            element={<Product />}
-          />
-          <Route
-            path="suppliers"
-            element={<Suppliers />}
-          />
-          <Route
-            path="orders"
-            element={<Order />}
-          />
-          <Route
-            path="users"
-            element={<User />}
-          />
-          <Route
-            path="profile"
-            element={<Profile />}
-          />
-          <Route
-            path="logout"
-            element={<h1>Logout</h1>}
-          />
+          <Route index element={<Summary />} />
+          <Route path="categories" element={<Categories />} />
+          <Route path="products" element={<Product />} />
+          <Route path="suppliers" element={<Suppliers />} />
+          <Route path="orders" element={<Order />} />
+          <Route path="users" element={<User />} />
+          <Route path="profile" element={<Profile />} />
+          <Route path="logout" element={<Navigate to="/login" replace />} />
         </Route>
-        
-        {/* CUSTOMER DASHBOARD - PROTECTED */}
+
+        {/* Customer dashboard - Protected (accepts both 'customer' and 'user') */}
         <Route 
-          path="/customer-dashboard" 
+          path="/customer-dashboard/*" 
           element={
-            <ProtectedRoutes requireRole={['customer']}>
+            <ProtectedRoutes requireRole={['customer', 'user']}>
               <CustomerDashboard />
             </ProtectedRoutes>
           }
         >
-          <Route
-            index
-            element={<h1>Welcome to Customer Dashboard</h1>}
-          />
-          <Route
-            path="products"
-            element={<CustomerProducts />}
-          />
-          <Route
-            path="orders"
-            element={<CustomerOrders />}
-          />
-          <Route
-            path="profile"
-            element={<CustomerProfile />}
-          />
+          <Route index element={<Navigate to="products" replace />} />
+          <Route path="products" element={<CustomerProducts />} />
+          <Route path="orders" element={<CustomerOrders />} />
+          <Route path="profile" element={<CustomerProfile />} />
         </Route>
 
-        {/* OLD CUSTOMER DASHBOARD ROUTE - REDIRECT TO NEW ONE */}
-        <Route 
-          path="/customer/dashboard" 
-          element={
-            <ProtectedRoutes requireRole={['customer']}>
-              <CustomerDashboard />
-            </ProtectedRoutes>
-          } 
-        />
+        {/* Old customer dashboard route redirects */}
+        <Route path="/customer/dashboard" element={<Navigate to="/customer-dashboard" replace />} />
 
-        {/* UNAUTHORIZED */}
+        {/* Unauthorized access */}
         <Route 
           path="/unauthorized" 
           element={
@@ -116,6 +73,9 @@ function App() {
             </div>
           } 
         />
+
+        {/* 404 Not Found */}
+        <Route path="*" element={<h1 className="text-center text-3xl mt-20">404 - Page Not Found</h1>} />
       </Routes>
     </Router>
   );

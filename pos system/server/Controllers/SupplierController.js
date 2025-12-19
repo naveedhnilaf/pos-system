@@ -1,142 +1,173 @@
-import Supplier from '../Models/Supplier.js';
+import { getConnection } from "../db/oracle.js";
+import oracledb from "oracledb";
 
-// Create a new supplier
+// -------------------- CREATE SUPPLIER storedprocedure--------------------
 const createSupplier = async (req, res) => {
     try {
         const { supplierName, supplierEmail, supplierPhone, supplierAddress } = req.body;
 
         if (!supplierName || !supplierEmail || !supplierPhone || !supplierAddress) {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'All fields are required' 
-            });
+            return res.status(400).json({ success: false, message: "All fields are required" });
         }
 
-        const newSupplier = new Supplier({
-            supplierName,
-            supplierEmail,
-            supplierPhone,
-            supplierAddress
-        });
+        const conn = getConnection();
 
-        await newSupplier.save();
-        res.status(201).json({ 
-            success: true, 
-            message: 'Supplier created successfully', 
-            supplier: newSupplier 
-        });
-    } catch (error) {
-        console.error('Error creating supplier:', error);
-        res.status(500).json({ 
-            success: false, 
-            message: 'Server error',
-            error: error.message
-        });
+        await conn.execute(
+            `BEGIN add_supplier(:name, :email, :phone, :address); END;`,
+            { name: supplierName, email: supplierEmail, phone: supplierPhone, address: supplierAddress },
+            { autoCommit: true }
+        );
+
+        res.status(201).json({ success: true, message: "Supplier created successfully" });
+
+    } catch (err) {
+        console.error("Error creating supplier:", err);
+        res.status(500).json({ success: false, message: "Server error", error: err.message });
     }
 };
 
-// Get all suppliers
+// -------------------- GET ALL SUPPLIERS storedprocedure--------------------
 const getAllSuppliers = async (req, res) => {
     try {
-        const suppliers = await Supplier.find();
-        res.status(200).json({ 
-            success: true, 
-            suppliers 
-        });
-    } catch (error) {
-        console.error('Error fetching suppliers:', error);
-        res.status(500).json({ 
-            success: false, 
-            message: 'Server error' 
-        });
+        const conn = getConnection();
+
+        // Execute stored procedure that returns a cursor
+        const result = await conn.execute(
+            `BEGIN get_all_suppliers(:cursor); END;`,
+            { cursor: { dir: oracledb.BIND_OUT, type: oracledb.CURSOR } }
+        );
+
+        const cursor = result.outBinds.cursor;
+        let rows = [];
+        let fetchMore = true;
+
+        // Fetch all rows in batches
+        while (fetchMore) {
+            const batch = await cursor.getRows(100); // fetch 100 rows at a time
+            if (batch.length === 0) {
+                fetchMore = false;
+            } else {
+                rows = rows.concat(batch);
+            }
+        }
+
+        await cursor.close();
+
+        // Map Oracle columns to frontend-friendly keys
+        const suppliers = rows.map(r => ({
+            _id: r[0],               // ORACLE SUPPLIER_ID
+            supplierName: r[1] ?? "", // SUPPLIER_NAME
+            supplierEmail: r[2] ?? "", // SUPPLIER_EMAIL
+            supplierPhone: r[3] ?? "", // SUPPLIER_PHONE
+            supplierAddress: r[4] ?? "", // SUPPLIER_ADDRESS
+            createdAt: r[5] ?? null    // CREATED_AT
+        }));
+
+        res.status(200).json({ success: true, suppliers });
+
+    } catch (err) {
+        console.error("Error fetching suppliers:", err);
+        res.status(500).json({ success: false, message: "Server error", error: err.message });
     }
 };
 
-// Get a single supplier by ID
+// -------------------- GET SUPPLIER BY ID storedprocedure--------------------
 const getSupplierById = async (req, res) => {
     try {
         const { id } = req.params;
-        const supplier = await Supplier.findById(id);
+        const conn = getConnection();
 
-        if (!supplier) {
-            return res.status(404).json({ 
-                success: false, 
-                message: 'Supplier not found' 
-            });
+        const result = await conn.execute(
+            `BEGIN get_supplier_by_id(:id, :cursor); END;`,
+            {
+                id: Number(id),
+                cursor: { dir: oracledb.BIND_OUT, type: oracledb.CURSOR }
+            }
+        );
+
+        const rows = await result.outBinds.cursor.getRows();
+        await result.outBinds.cursor.close();
+
+        if (rows.length === 0) {
+            return res.status(404).json({ success: false, message: "Supplier not found" });
         }
 
-        res.status(200).json({ 
-            success: true, 
-            supplier 
-        });
-    } catch (error) {
-        console.error('Error fetching supplier:', error);
-        res.status(500).json({ 
-            success: false, 
-            message: 'Server error' 
-        });
+        const row = rows[0];
+        const supplier = {
+            supplierId: row[0],
+            supplierName: row[1],
+            supplierEmail: row[2],
+            supplierPhone: row[3],
+            supplierAddress: row[4],
+            createdAt: row[5]
+        };
+
+        res.status(200).json({ success: true, supplier });
+
+    } catch (err) {
+        console.error("Error fetching supplier by ID:", err);
+        res.status(500).json({ success: false, message: "Server error", error: err.message });
     }
 };
 
-// Update a supplier
+// -------------------- UPDATE SUPPLIER storedprocedure--------------------
 const updateSupplier = async (req, res) => {
     try {
         const { id } = req.params;
         const { supplierName, supplierEmail, supplierPhone, supplierAddress } = req.body;
 
-        const updatedSupplier = await Supplier.findByIdAndUpdate(
-            id,
-            { supplierName, supplierEmail, supplierPhone, supplierAddress },
-            { new: true, runValidators: true }
+        const conn = getConnection();
+
+        const result = await conn.execute(
+            `BEGIN update_supplier(:id, :name, :email, :phone, :address, :rows); END;`,
+            {
+                id: Number(id),
+                name: supplierName,
+                email: supplierEmail,
+                phone: supplierPhone,
+                address: supplierAddress,
+                rows: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER }
+            },
+            { autoCommit: true }
         );
 
-        if (!updatedSupplier) {
-            return res.status(404).json({ 
-                success: false, 
-                message: 'Supplier not found' 
-            });
+        if (result.outBinds.rows === 0) {
+            return res.status(404).json({ success: false, message: "Supplier not found" });
         }
 
-        res.status(200).json({ 
-            success: true, 
-            message: 'Supplier updated successfully', 
-            supplier: updatedSupplier 
-        });
-    } catch (error) {
-        console.error('Error updating supplier:', error);
-        res.status(500).json({ 
-            success: false, 
-            message: 'Server error' 
-        });
+        res.status(200).json({ success: true, message: "Supplier updated successfully" });
+
+    } catch (err) {
+        console.error("Error updating supplier:", err);
+        res.status(500).json({ success: false, message: "Server error", error: err.message });
     }
 };
 
-// Delete a supplier
+// -------------------- DELETE SUPPLIER storedprocedure--------------------
 const deleteSupplier = async (req, res) => {
     try {
         const { id } = req.params;
+        const conn = getConnection();
 
-        const deletedSupplier = await Supplier.findByIdAndDelete(id);
+        const result = await conn.execute(
+            `BEGIN delete_supplier(:id, :rows); END;`,
+            {
+                id: Number(id),
+                rows: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER }
+            },
+            { autoCommit: true }
+        );
 
-        if (!deletedSupplier) {
-            return res.status(404).json({ 
-                success: false, 
-                message: 'Supplier not found' 
-            });
+        if (result.outBinds.rows === 0) {
+            return res.status(404).json({ success: false, message: "Supplier not found" });
         }
 
-        res.status(200).json({ 
-            success: true, 
-            message: 'Supplier deleted successfully' 
-        });
-    } catch (error) {
-        console.error('Error deleting supplier:', error);
-        res.status(500).json({ 
-            success: false, 
-            message: 'Server error' 
-        });
+        res.status(200).json({ success: true, message: "Supplier deleted successfully" });
+
+    } catch (err) {
+        console.error("Error deleting supplier:", err);
+        res.status(500).json({ success: false, message: "Server error", error: err.message });
     }
 };
 
 export { createSupplier, getAllSuppliers, getSupplierById, updateSupplier, deleteSupplier };
-

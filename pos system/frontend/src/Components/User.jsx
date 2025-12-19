@@ -22,10 +22,10 @@ function User() {
         try {
             const token = localStorage.getItem('pos-token');
             console.log("Token:", token);
-            console.log("Fetching from: http://localhost:5000/api/users/all");
+            console.log("Fetching from: http://localhost:5002/api/users/all");
             
             const response = await axios.get(
-                "http://localhost:5000/api/users/all",
+                "http://localhost:5002/api/users/all",
                 {
                     headers: {
                         Authorization: `Bearer ${token}`
@@ -56,7 +56,7 @@ function User() {
                 }
 
                 const response = await axios.put(
-                    `http://localhost:5000/api/users/${editingId}`,
+                    `http://localhost:5002/api/users/${editingId}`,
                     updateData,
                     {
                         headers: {
@@ -79,7 +79,7 @@ function User() {
             } else {
                 // Add new user
                 const response = await axios.post(
-                    "http://localhost:5000/api/users/add",
+                    "http://localhost:5002/api/users/add",
                     { name, email, password, address, role },
                     {
                         headers: {
@@ -135,7 +135,7 @@ function User() {
 
         try {
             const response = await axios.delete(
-                `http://localhost:5000/api/users/${id}`,
+                `http://localhost:5002/api/users/${id}`,
                 {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem('pos-token')}`

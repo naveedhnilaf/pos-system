@@ -15,7 +15,7 @@ function CustomerProducts() {
         setLoading(true);
         try {
             const response = await axios.get(
-                "http://localhost:5000/api/products/all",
+                "http://localhost:5002/api/products/all",
                 {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem('pos-token')}`

@@ -1,20 +1,22 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../Context/authContext.jsx';
 
 const CustomerSidebar = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const { logout } = useAuth();
 
     const handleLogout = () => {
         logout();
-        navigate('/login');
+        navigate('/login', { replace: true });
     };
 
+    // Absolute paths for navigation
     const menuItems = [
-        { label: 'Products', path: 'products', icon: '📦' },
-        { label: 'Orders', path: 'orders', icon: '📋' },
-        { label: 'Profile', path: 'profile', icon: '👤' },
+        { label: 'Products', path: '/customer-dashboard/products', icon: '📦' },
+        { label: 'Orders', path: '/customer-dashboard/orders', icon: '📋' },
+        { label: 'Profile', path: '/customer-dashboard/profile', icon: '👤' },
     ];
 
     return (
@@ -22,16 +24,22 @@ const CustomerSidebar = () => {
             <h2 className='text-2xl font-bold mb-8 text-center'>POS System</h2>
             
             <nav className='space-y-2 mb-8'>
-                {menuItems.map((item) => (
-                    <button
-                        key={item.path}
-                        onClick={() => navigate(item.path)}
-                        className='w-full text-left px-4 py-3 rounded-lg hover:bg-gray-700 transition-colors flex items-center gap-3'
-                    >
-                        <span>{item.icon}</span>
-                        <span>{item.label}</span>
-                    </button>
-                ))}
+                {menuItems.map((item) => {
+                    const isActive = location.pathname === item.path;
+
+                    return (
+                        <button
+                            key={item.path}
+                            onClick={() => navigate(item.path)}
+                            className={`w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 transition-colors ${
+                                isActive ? 'bg-gray-700 font-semibold' : 'hover:bg-gray-700'
+                            }`}
+                        >
+                            <span>{item.icon}</span>
+                            <span>{item.label}</span>
+                        </button>
+                    );
+                })}
             </nav>
 
             <button

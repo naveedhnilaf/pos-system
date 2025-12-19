@@ -1,27 +1,33 @@
-import express from "express";
-import { 
-    createSupplier, 
-    getAllSuppliers, 
-    getSupplierById, 
-    updateSupplier, 
-    deleteSupplier 
-} from "../Controllers/SupplierController.js";
+// server/Routes/Supplier.js
+import express from 'express';
+import {
+  createSupplier,
+  getAllSuppliers,
+  getSupplierById,
+  updateSupplier,
+  deleteSupplier
+} from '../Controllers/SupplierController.js';
 
 const router = express.Router();
 
-// Create a new supplier
-router.post('/add', createSupplier);
+// GET all suppliers
+// Full URL: /api/suppliers
+router.get('/', getAllSuppliers);
 
-// Get all suppliers
-router.get('/all', getAllSuppliers);
+// POST create a new supplier
+// Full URL: /api/suppliers
+router.post('/', createSupplier);
 
-// Get a single supplier by ID
+// GET a single supplier by ID
+// Full URL: /api/suppliers/:id
 router.get('/:id', getSupplierById);
 
-// Update a supplier
+// PUT update a supplier by ID
+// Full URL: /api/suppliers/:id
 router.put('/:id', updateSupplier);
 
-// Delete a supplier
+// DELETE a supplier by ID
+// Full URL: /api/suppliers/:id
 router.delete('/:id', deleteSupplier);
 
 export default router;

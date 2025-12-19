@@ -3,7 +3,7 @@ import { useAuth } from "../Context/authContext.jsx";
 import { useNavigate } from "react-router-dom";
 
 const ProtectedRoutes = ({ children, requireRole }) => {
-    const { user, loading } = useAuth();  // Assuming your auth context has a loading state
+    const { user, loading } = useAuth(); 
     const navigate = useNavigate();
     const [checked, setChecked] = useState(false);
 
@@ -12,12 +12,15 @@ const ProtectedRoutes = ({ children, requireRole }) => {
             navigate("/login");
             return;
         }
+
         
-        if (!requireRole.includes(user.role)) {
+        const userRole = user.role === 'user' ? 'customer' : user.role;
+
+        if (!requireRole.includes(userRole)) {
             navigate("/unauthorized");
             return;  
         }
-        
+
         setChecked(true);
     }, [user, navigate, requireRole]);
 
